@@ -276,7 +276,7 @@ const getAllCrCdcByBatch = asyncHandler(async (req, res) => {
   // Fetch all users from the same batch who are either CR or CDC
   const crCdcMembers = await User.find({
     batch: userBatch,
-    role: { $in: ["cr", "cdc"] }, // Filter for users with role CR or CDC
+    role: { $in: ["cr", "cdc","mycomp"] }, // Filter for users with role CR or CDC
   })
     .select("fullname role profileImage linkedinUrl githubUrl") // Select only required fields
     .lean(); // Convert to plain JS objects
@@ -311,14 +311,14 @@ const makeCrCdc = asyncHandler(async (req, res) => {
   if (!userId || !role) {
     throw new ApiError(400, "User ID and role (cr/cdc) are required");
   }
-  if (!["cr", "cdc"].includes(role)) {
+  if (!["cr", "cdc","mycomp"].includes(role)) {
     throw new ApiError(400, "Role must be either 'cr' or 'cdc'");
   }
 
   // Check if the authenticated user is a CDC
   const currentUser = req.user;
   if (currentUser.role !== "cdc") {
-    throw new ApiError(403, "Forbidden: Only CDC members can assign CR/CDC roles");
+    throw new ApiError(403, "Forbidden: Only CDC members can assign CR/CDC/MYCOMP roles");
   }
 
   // Parse batches as numbers (assuming batch is a string like "43")
@@ -342,7 +342,7 @@ const makeCrCdc = asyncHandler(async (req, res) => {
   }
 
   // Prevent overwriting an existing CR/CDC role (optional)
-  if (["cr", "cdc"].includes(targetUser.role)) {
+  if (["cr", "cdc","mycomp"].includes(targetUser.role)) {
     throw new ApiError(400, `User is already assigned as ${targetUser.role}`);
   }
 
@@ -383,4 +383,3 @@ export {
   makeCrCdc
 };
 
-//bhbhbhb

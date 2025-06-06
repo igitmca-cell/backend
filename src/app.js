@@ -29,8 +29,8 @@ import userRouter from "./routes/user.route.js";
 import noticeRouter from "./routes/notice.route.js";
 import resourceRouter from "./routes/resource.route.js";
 import alumniRouter from "./routes/alumni.route.js";
-
-
+import attendanceRoute from "./routes/attendance.route.js";
+import classRoute from './routes/classSchedule.route.js'
 //routes declearation
 //user route
 app.get("/",(req,res)=>{
@@ -43,4 +43,6 @@ app.use("/api/v1/users",userRouter)
 app.use("/api/v1/notice",noticeRouter)
 app.use("/api/v1/resource",resourceRouter)
 app.use("/api/v1/alumni",alumniRouter)
+app.use("/api/v1/attendance",attendanceRoute)
+app.use("/api/v1/class",classRoute)
 export default  app 
