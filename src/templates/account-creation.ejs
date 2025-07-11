@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to IGIT(MCA) - Account Created Successfully</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a; /* App's dark cosmic background */
+            margin: 0;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #2e1a47; /* Mid-tone purple from app */
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(168, 85, 247, 0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #1a0b2e, #4a2c6d); /* App's gradient */
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        .header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            border: 2px solid rgba(168, 85, 247, 0.4); /* App's photo border */
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+        .header img:hover {
+            transform: scale(1.05); /* Subtle pulse like app's animation */
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+            text-shadow: 0 0 15px rgba(168, 85, 247, 0.5); /* App-like text shadow */
+        }
+        .content {
+            padding: 20px;
+        }
+        .content p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+        .content .welcome-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #a855f7; /* Accent purple */
+        }
+        .content ul {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        .content ul li {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2); /* App's subtle divider */
+            position: relative;
+            padding-left: 20px;
+        }
+        .content ul li:before {
+            content: '>';
+            color: #a855f7;
+            position: absolute;
+            left: 0;
+            font-weight: 600;
+        }
+        .content .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            margin-top: 20px;
+            background: #a855f7;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px; /* Rounded like app buttons */
+            font-size: 16px;
+            font-weight: 600;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            transition: all 0.3s ease;
+        }
+        .content .btn:hover {
+            background: #8b48d1;
+            box-shadow: 0 4px 10px rgba(168, 85, 247, 0.4);
+        }
+        .footer {
+            background: #1a0b2e; /* Darkest purple */
+            padding: 15px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            border-top: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        .footer a {
+            color: #a855f7;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Logo -->
+        <div class="header">
+            <img src="<%= companyLogo %>" alt="IGIT(MCA) Logo">
+            <h1>Welcome to IGIT(MCA)!</h1>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <p>Hi <strong><%= name %></strong>,</p>
+            <p class="welcome-text">Congratulations! Your account has been successfully created!</p>
+            <p>We’re thrilled to have you join the IGIT(MCA) family—a vibrant community designed to empower your academic journey and beyond. With our cutting-edge app, you’re about to unlock a world of opportunities tailored just for you!</p>
+            <p>Here’s what awaits you with the IGIT(MCA) App:</p>
+            <ul>
+                <li>Access semester resources like notes, previous question papers, and exclusive study guides to ace your exams.</li>
+                <li>Stay ahead with real-time updates on notices, announcements, and events—never miss a deadline again!</li>
+                <li>Connect with your peers, class representatives, and mentors to collaborate, share ideas, and grow together.</li>
+                <li>Explore interactive tools and features designed to make learning engaging and stress-free.</li>
+                <li>Join a thriving network of MCA students and alumni who are shaping the future of technology.</li>
+            </ul>
+            <p>Dive into a seamless experience crafted to boost your productivity and keep you inspired. Whether you're preparing for exams, seeking career advice, or just connecting with friends, IGIT(MCA) is your one-stop hub.</p>
+            <p>Ready to kickstart your journey? Log in now and discover how IGIT(MCA) can transform the way you learn and succeed!</p>
+            <!-- <a href="<%= loginLink %>" class="btn">Login to Your Account</a> -->
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Have questions or need assistance? Our friendly support team is just an email away at <a href="mailto:igitmcaapp@gmail.com">igitmcaapp@gmail.com</a>.</p>
+            <p>© <%= year %> IGIT(MCA). All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

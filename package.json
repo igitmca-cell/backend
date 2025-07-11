@@ -1,0 +1,47 @@
+{
+  "name": "IGITMCABACKEND",
+  "version": "1.0.0",
+  "description": " backend Of IGIT MCA APP",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon -r dotenv/config --experimental-json-modules  src/index.js",
+    "start": "nodemon -r dotenv/config --experimental-json-modules  src/index.js"
+  },
+  "keywords": [
+    "javascript"
+  ],
+  "author": "Sidhanta Pradhan",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.8.3",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "cheerio": "^1.0.0",
+    "cloudinary": "^2.2.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "expo-server-sdk": "^3.14.0",
+    "express": "^4.19.2",
+    "face-api.js": "^0.22.2",
+    "fs": "^0.0.1-security",
+    "geolib": "^3.3.4",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.1",
+    "mongoose-aggregate-paginate-v2": "^1.0.7",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.10.0",
+    "path": "^0.12.7",
+    "stripe": "^17.6.0",
+    "twilio": "^5.4.3",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5"
+  }
+}
