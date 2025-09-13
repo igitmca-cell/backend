@@ -76,67 +76,74 @@ export const endClass = asyncHandler(async (req, res) => {
 // ✅ Mark attendance (student) 
 
 
+// ✅ Mark attendance (student) with base64 photo
 export const markAttendance = asyncHandler(async (req, res) => {
-  const { scheduleId, location } = req.body;
+  const { scheduleId, location, photo } = req.body;
   const studentId = req.user._id;
 
-  if (!scheduleId || !location?.lat || !location?.lon) {
-    throw new ApiError(400, "Schedule ID, location are required");
+  if (!scheduleId || !location?.lat || !location?.lon || !photo) {
+    throw new ApiError(400, "Schedule ID, location, and photo are required");
   }
 
-  // ✅ Multer with upload.single("photo") gives req.file
-  const photoFile = req.files?.photo?.[0];
-  if (!photoFile) {
-    throw new ApiError(400, "Photo is required");
+  // ✅ Decode base64 → temp file
+  const base64Data = photo.replace(/^data:image\/\w+;base64,/, "");
+  const buffer = Buffer.from(base64Data, "base64");
+
+  // Save in temp folder (make sure `public/temp/` exists)
+  const tempFilePath = `public/temp/${Date.now()}_${studentId}.png`;
+  fs.writeFileSync(tempFilePath, buffer);
+
+  try {
+    const schedule = await ClassSchedule.findById(scheduleId);
+    const student = await User.findById(studentId);
+    if (!schedule || !student) throw new ApiError(404, "Schedule or student not found");
+
+    if (!schedule.isActive) throw new ApiError(400, "Class is not active");
+
+    const isInRange = verifyLocation(
+      { lat: schedule.locationLat, lon: schedule.locationLon },
+      location
+    );
+    if (!isInRange) throw new ApiError(400, "You are not in the classroom location");
+
+    // ✅ Prepare form-data for /match_faces
+    const formData = new FormData();
+    formData.append("file1", fs.createReadStream(tempFilePath)); // decoded photo file
+    formData.append("file2", student.profileImage);              // student's stored profile image
+
+    const response = await axios.post("http://3.6.19.254/match_faces", formData, {
+      headers: formData.getHeaders(),
+      maxBodyLength: Infinity,
+    });
+
+    const isVerified = response.data?.match === true;
+    if (!isVerified) throw new ApiError(401, "Biometric verification failed");
+
+    // ✅ Mark attendance
+    const attendance = await Attendance.create({
+      scheduleId,
+      studentId,
+      timestamp: new Date(),
+      status: "present",
+      verified: true,
+    });
+
+    res.status(200).json(
+      new ApiResponse(
+        200,
+        { attendanceId: attendance._id },
+        "Attendance marked successfully with biometric"
+      )
+    );
+  } finally {
+    // ✅ Always cleanup temp file
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlink(tempFilePath, (err) => {
+        if (err) console.error("❌ Failed to delete temp photo:", err);
+        else console.log("✅ Temp photo deleted:", tempFilePath);
+      });
+    }
   }
-
-  const schedule = await ClassSchedule.findById(scheduleId);
-  const student = await User.findById(studentId);
-  if (!schedule || !student) throw new ApiError(404, "Schedule or student not found");
-
-  if (!schedule.isActive) throw new ApiError(400, "Class is not active");
-
-  const isInRange = verifyLocation(
-    { lat: schedule.locationLat, lon: schedule.locationLon },
-    location
-  );
-  if (!isInRange) throw new ApiError(400, "You are not in the classroom location");
-
-  // ✅ Prepare form-data for /match_faces
-  const formData = new FormData();
-
-  // file1 → actual uploaded image (use path saved by Multer)
-  formData.append("file1", fs.createReadStream(photoFile.path));
-
-  // file2 → profile image URL string
-  formData.append("file2", student.profileImage);
-
-const response = await axios.post("http://3.6.19.254/match_faces", formData, {
-  headers: formData.getHeaders(),
-  maxBodyLength: Infinity,
-});
-
-  const isVerified = response.data?.match === true; // adjust according to your API response
-
-  if (!isVerified) throw new ApiError(401, "Biometric verification failed");
-
-
-  // ✅ Mark attendance
-  const attendance = await Attendance.create({
-    "scheduleId":scheduleId,
-    studentId,
-    timestamp: new Date(),
-    status: "present",
-    verified: true,
-  });
-
-  res.status(200).json(
-    new ApiResponse(
-      200,
-      { attendanceId: attendance._id },
-      "Attendance marked successfully with biometric"
-    )
-  );
 });
 
 
@@ -144,7 +151,7 @@ const response = await axios.post("http://3.6.19.254/match_faces", formData, {
 export const getStudentAttendance = asyncHandler(async (req, res) => {
   const studentId = req.user._id;
 
-  const records = await Attendance.find({ studentId }).populate("scheduleId ");
+  const records = await Attendance.find({ studentId }).populate("scheduleId");
 
   res.status(200).json(new ApiResponse(200, records, "Student attendance history"));
 });
