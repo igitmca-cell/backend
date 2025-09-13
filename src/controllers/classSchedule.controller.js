@@ -8,15 +8,22 @@ import { User } from "../models/user.model.js";
 export const createClassSchedule = asyncHandler(async (req, res) => {
     const { className, startTime, endTime,classBatch } = req.body;
     const teacherId = req.user._id; // Provided by auth middleware
+   
+    
   
     if (!className || !startTime || !endTime || !classBatch) {
       throw new ApiError(400, "Class name, start time,  end time and Class Batch are required");
     }
   
-    const parsedStart = new Date(startTime);
-    const parsedEnd = new Date(endTime);
+  const parsedStart = new Date(startTime);
+const parsedEnd = new Date(endTime);
+
+
+
+
+
   
-    if (isNaN(parsedStart) || isNaN(parsedEnd)) { 
+    if (isNaN(parsedEnd) || isNaN(parsedStart)) { 
       throw new ApiError(400, "Invalid date format for startTime or endTime");
     }
   

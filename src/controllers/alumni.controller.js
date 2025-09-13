@@ -75,6 +75,8 @@ const createAlumni = asyncHandler(async (req, res) => {
   }
 
   const { name, designation, batch, linkedinUrl, location } = req.body;
+  console.log(location);
+  
 
   if ([name, designation, batch, linkedinUrl, location?.latitude, location?.longitude].some(
     (field) => field === undefined || field === null || field.toString().trim() === ""

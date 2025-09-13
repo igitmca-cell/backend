@@ -41,8 +41,7 @@ const userSchema = new Schema(
             required: true
         },
         batch: {
-            type: String,
-            required: true, // Adjust based on your needs
+            type: String, // Adjust based on your needs
             trim: true,
             default: "43"
         },
@@ -56,9 +55,6 @@ const userSchema = new Schema(
         expoPushToken: {
             type: String, // Expo push token for notifications
             trim: true
-        },
-        biometricPublicKey:{
-            type:String,
         }
     },
     { timestamps: true }

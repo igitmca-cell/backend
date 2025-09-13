@@ -26,8 +26,7 @@ const semesterResourceSchema = new Schema(
     },
     batch: {
       type: String,
-      trim: true,
-      required: [
+      trim: true,required: [
         function () {
           return this.type === "questionPaper";
         },

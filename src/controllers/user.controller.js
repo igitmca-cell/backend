@@ -75,6 +75,17 @@ const registerUser = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Error uploading avatar");
     }
   }
+   const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1; // 0-based, so +1
+
+  // Assume batch 43 starts Aug 2024
+  const baseBatch = 43;
+  const baseYear = 2024;
+
+  // If month >= 8 (Aug or later), batch year starts this year; else previous year
+  const batchOffset = month >= 8 ? year - baseYear : year - baseYear - 1;
+  const batch = baseBatch + batchOffset;
 
   const user = await User.create({
     fullname,
@@ -85,6 +96,7 @@ const registerUser = asyncHandler(async (req, res) => {
     rollno,
     'profileImage': avatar.secure_url,
     status: "pending",
+    batch
   });
 
   const createdUser = await User.findById(user._id).select("-password -refreshToken");
@@ -391,6 +403,23 @@ return res
 
 
 });
+const pendingStudent = asyncHandler(async (req,res)=>{
+ if(!req.user){
+   throw new ApiError(401, "Unauthorized: Please log in to assign CR/CDC roles");
+ }
+
+ const students = await User.find({status:'pending'});
+ if(!students){
+  throw new ApiError(404,"Target User not found")
+ }
+
+
+return res
+    .status(200)
+    .json(new ApiResponse(200, students,`pending students found successfully`));
+
+
+});
 
 const setSignature = asyncHandler(async (req,res)=>{
   if(!req.user){
@@ -433,6 +462,7 @@ export {
   getAllCrCdcByBatch,
   makeCrCdc,
   approveStudent,
-  setSignature
+  setSignature,
+  pendingStudent
 };
 

@@ -18,16 +18,12 @@ router.route("/start").post(verifyJWT, startClass);
 router.route("/end").post(verifyJWT, endClass);
 
 // Mark attendance (student only)
-router.route("/mark").post(
-  verifyJWT,
-  upload.fields([
-    {
-      name: "photo",
-      maxCount: 1,
-    },
-  ]),
-  markAttendance
-);
+router.route("/mark").post(  upload.fields([
+        {name:"photo",
+            maxCount: 1
+        }
+    ]),verifyJWT, markAttendance);
+
 
 // Get student's own attendance (student only)
 router.route("/student").get(verifyJWT, getStudentAttendance);

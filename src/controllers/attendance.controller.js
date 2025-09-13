@@ -4,7 +4,13 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Attendance } from "../models/attendance.model.js";
 import { ClassSchedule } from "../models/classSchedule.model.js";
 import { User } from "../models/user.model.js";
+import { sendPushNotifications } from "../utils/notificationService.js";
 import geolib from "geolib";
+import axios from "axios";
+import fs from 'fs';
+import FormData from "form-data";
+import mongoose from "mongoose";
+
 
 
 // ✅ Utility: Verify location within a distance range
@@ -26,11 +32,13 @@ const verifyLocation = (classLocation, studentLocation, maxDistanceMeters = 100)
 export const startClass = asyncHandler(async (req, res) => {
   const { scheduleId, locationLat, locationLon } = req.body;
   const teacherId = req.user._id;
+  console.log(req.body);
+  
 
   const schedule = await ClassSchedule.findOne({ _id: scheduleId, teacherId });
   if (!schedule) throw new ApiError(404, "Schedule not found");
 
-  if (schedule.isActive) throw new ApiError(400, "Class already started");
+  // if (schedule.isActive) throw new ApiError(400, "Class already started");
 
   // ✅ Update location if provided
   if (locationLat && locationLon) {
@@ -40,6 +48,10 @@ export const startClass = asyncHandler(async (req, res) => {
 
   schedule.isActive = true;
   await schedule.save();
+    sendPushNotifications(
+      "Attendance",
+      `Now You can mark attendance for ${schedule.className}`
+    );
 
   res.status(200).json(new ApiResponse(200, schedule, "Class started and location updated"));
 });
@@ -62,12 +74,20 @@ export const endClass = asyncHandler(async (req, res) => {
 });
 
 // ✅ Mark attendance (student) 
+
+
 export const markAttendance = asyncHandler(async (req, res) => {
-  const { scheduleId, location, payload, signature } = req.body;
+  const { scheduleId, location } = req.body;
   const studentId = req.user._id;
 
-  if (!scheduleId || !location?.lat || !location?.lon || !payload || !signature) {
-    throw new ApiError(400, "Schedule ID, location, payload, and signature are required");
+  if (!scheduleId || !location?.lat || !location?.lon) {
+    throw new ApiError(400, "Schedule ID, location are required");
+  }
+
+  // ✅ Multer with upload.single("photo") gives req.file
+  const photoFile = req.files?.photo?.[0];
+  if (!photoFile) {
+    throw new ApiError(400, "Photo is required");
   }
 
   const schedule = await ClassSchedule.findById(scheduleId);
@@ -82,33 +102,40 @@ export const markAttendance = asyncHandler(async (req, res) => {
   );
   if (!isInRange) throw new ApiError(400, "You are not in the classroom location");
 
-  // ✅ Biometric signature verification
-  const NodeRSA = require("node-rsa");
+  // ✅ Prepare form-data for /match_faces
+  const formData = new FormData();
 
-  const publicKey = student.biometricPublicKey; // Must be stored during setup
-  if (!publicKey) throw new ApiError(400, "Biometric public key not set up for this user");
+  // file1 → actual uploaded image (use path saved by Multer)
+  formData.append("file1", fs.createReadStream(photoFile.path));
 
-  const key = new NodeRSA();
-  key.importKey(publicKey, "pkcs8-public");
+  // file2 → profile image URL string
+  formData.append("file2", student.profileImage);
 
-  const isVerified = key.verify(
-    Buffer.from(payload),
-    Buffer.from(signature, "base64")
-  );
+const response = await axios.post("http://3.6.19.254/match_faces", formData, {
+  headers: formData.getHeaders(),
+  maxBodyLength: Infinity,
+});
+
+  const isVerified = response.data?.match === true; // adjust according to your API response
 
   if (!isVerified) throw new ApiError(401, "Biometric verification failed");
 
-  // ✅ If all good, mark attendance
+
+  // ✅ Mark attendance
   const attendance = await Attendance.create({
-    scheduleId,
+    "scheduleId":scheduleId,
     studentId,
     timestamp: new Date(),
     status: "present",
-    verified: true, 
+    verified: true,
   });
 
   res.status(200).json(
-    new ApiResponse(200, { attendanceId: attendance._id }, "Attendance marked successfully with biometric")
+    new ApiResponse(
+      200,
+      { attendanceId: attendance._id },
+      "Attendance marked successfully with biometric"
+    )
   );
 });
 
@@ -117,16 +144,24 @@ export const markAttendance = asyncHandler(async (req, res) => {
 export const getStudentAttendance = asyncHandler(async (req, res) => {
   const studentId = req.user._id;
 
-  const records = await Attendance.find({ studentId }).populate("scheduleId");
+  const records = await Attendance.find({ studentId }).populate("scheduleId ");
 
   res.status(200).json(new ApiResponse(200, records, "Student attendance history"));
 });
 
 // ✅ Get all attendance records for a class (teacher)
 export const getClassAttendance = asyncHandler(async (req, res) => {
-  const { scheduleId } = req.params;
+  let { scheduleId } = req.params;
   const teacherId = req.user._id;
-
+ 
+  
+ if (!mongoose.Types.ObjectId.isValid(scheduleId)) {
+      scheduleId = scheduleId.padEnd(24, "0"); // pad to 24 characters
+      if (!mongoose.Types.ObjectId.isValid(scheduleId)) {
+        return res.status(400).json({ message: "Invalid schedule ID" });
+      }
+    }
+   
   const schedule = await ClassSchedule.findOne({ _id: scheduleId, teacherId });
   if (!schedule) throw new ApiError(404, "Schedule not found");
 
